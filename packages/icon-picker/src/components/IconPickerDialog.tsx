@@ -11,6 +11,7 @@ import { IconPickerGrid } from "./IconPickerGrid";
 import { IconPickerHeader } from "./IconPickerHeader";
 import { IconPickerSidebar } from "./IconPickerSidebar";
 import { useIconStoreConfig } from "./IconProvider";
+import { cssString } from "../styles";
 
 const RENDER_CAP = 300;
 type Tab = "library" | "custom";
@@ -205,16 +206,17 @@ export function IconPickerDialog({
 
   return createPortal(
     <div className="icon-picker-scope antialiased" style={themeVars}>
+      <style dangerouslySetInnerHTML={{ __html: cssString }} />
       {/* Backdrop */}
       <div 
-        className={`fixed inset-0 z-9998 transition-opacity duration-200 ease-out ${isVisible ? "opacity-100" : "opacity-0"}`}
+        className={`fixed inset-0 z-[9998] transition-opacity duration-200 ease-out ${isVisible ? "opacity-100" : "opacity-0"}`}
         style={{ backgroundColor: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}
         onClick={onClose} 
       />
       
       {/* Modal Container */}
       <div
-        className={`fixed left-1/2 top-1/2 w-[95%] md:w-full z-9999 flex max-w-300 h-[85vh] -translate-x-1/2 flex-col md:flex-row overflow-hidden rounded-2xl transition-all duration-200 ease-out ${isVisible ? "-translate-y-1/2 opacity-100 scale-100" : "translate-y-[-48%] opacity-0 scale-95"}`}
+        className={`fixed left-1/2 top-1/2 w-[95%] md:w-full z-[9999] flex max-w-[1200px] h-[85vh] -translate-x-1/2 flex-col md:flex-row overflow-hidden rounded-2xl transition-all duration-200 ease-out ${isVisible ? "-translate-y-1/2 opacity-100 scale-100" : "translate-y-[-48%] opacity-0 scale-95"}`}
         style={{ border: "1px solid var(--ip-border)", backgroundColor: "var(--ip-bg)" }}
       >
         <IconPickerSidebar 

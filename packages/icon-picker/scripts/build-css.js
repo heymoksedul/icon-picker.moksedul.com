@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const postcss = require('postcss');
 
 const cssPath = path.join(__dirname, '../dist/index.css');
 const tsPath = path.join(__dirname, '../src/styles.ts');
@@ -11,46 +12,38 @@ if (fs.existsSync(cssPath)) {
   css = css.replace(/@layer\s+theme,\s*base,\s*components,\s*utilities;/g, '');
   css = css.replace(/@layer\s+properties;/g, '');
 
-  // 2. Replace global :root, :host and html with .icon-picker-scope
-  css = css.replace(/:root,\s*:host/g, '.icon-picker-scope');
-  css = css.replace(/html,\s*:host/g, '.icon-picker-scope');
+  // 2. Parse CSS using PostCSS AST
+  const root = postcss.parse(css);
 
-  // 3. Prefix EVERY single rule selector in base, utilities, and components with .icon-picker-scope
-  css = css.replace(
-    /([^{}]+)\{([^{}]+)\}/g,
-    (ruleMatch, selectors, body) => {
-      if (
-        selectors.includes('@') ||
-        selectors.includes('keyframes')
-      ) {
-        return ruleMatch;
-      }
-      const scopedSelectors = selectors
-        .split(',')
-        .map((s) => {
-          const trimmed = s.trim();
-          if (!trimmed) return trimmed;
-          if (trimmed.startsWith('.icon-picker-scope')) return trimmed;
-          if (trimmed.startsWith('.dark') || trimmed.includes('.dark')) {
-            if (trimmed.includes('.icon-picker-scope')) return trimmed;
-            return `.dark .icon-picker-scope ${trimmed.replace('.dark', '').trim()}`;
-          }
-          return `.icon-picker-scope ${trimmed}`;
-        })
-        .join(', ');
-      return `${scopedSelectors} {${body}}`;
+  root.walkRules((rule) => {
+    // Skip rules inside @keyframes
+    if (rule.parent && rule.parent.type === 'atrule' && rule.parent.name === 'keyframes') {
+      return;
     }
-  );
+    rule.selectors = rule.selectors.map((s) => {
+      const trimmed = s.trim();
+      if (!trimmed) return trimmed;
+      if (trimmed === ':root' || trimmed === ':host' || trimmed === 'html') {
+        return '.icon-picker-scope';
+      }
+      if (trimmed.startsWith('.icon-picker-scope')) return trimmed;
+      if (trimmed.startsWith('.dark')) {
+        return `.dark .icon-picker-scope ${trimmed.replace(/^\.dark\s*/, '')}`;
+      }
+      return `.icon-picker-scope ${trimmed}`;
+    });
+  });
 
-  // 4. Wrap entire package CSS in an isolated cascade layer
-  css = `@layer icon-picker-layer {\n${css}\n}`;
+  let outputCss = root.toString();
 
-  // Update dist/index.css with scoped version
-  fs.writeFileSync(cssPath, css, 'utf8');
+  // 3. Wrap entire package CSS in an isolated cascade layer
+  outputCss = `@layer icon-picker-layer {\n${outputCss}\n}`;
 
-  const tsContent = `export const cssString = ${JSON.stringify(css)};\n`;
+  fs.writeFileSync(cssPath, outputCss, 'utf8');
+
+  const tsContent = `export const cssString = ${JSON.stringify(outputCss)};\n`;
   fs.writeFileSync(tsPath, tsContent);
-  console.log('✅ Generated src/styles.ts with .icon-picker-scope & @layer');
+  console.log('✅ Safely generated src/styles.ts with PostCSS AST scoping & @layer');
 } else {
   console.error('❌ dist/index.css not found');
   process.exit(1);
