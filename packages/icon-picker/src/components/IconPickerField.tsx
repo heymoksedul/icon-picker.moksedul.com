@@ -72,7 +72,7 @@ export function IconPickerField({
     : {};
 
   const label = value
-    ? value.type === "react-icon" ? value.name : "Custom SVG"
+    ? (value.name || (value.type === "react-icon" ? value.name : "Custom SVG"))
     : placeholder;
 
   // ── Card variant ──────────────────────────────────────────────────────────

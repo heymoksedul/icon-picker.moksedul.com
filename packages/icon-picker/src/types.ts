@@ -1,7 +1,7 @@
 export type IconValue =
   | { type: "react-icon"; set: string; name: string; size?: number; color?: string }
   | { type: "svg"; svg: string; name?: string; size?: number; color?: string }
-  | { type: "url"; url: string; size?: number; color?: string };
+  | { type: "url"; url: string; name?: string; size?: number; color?: string };
 
 export interface IconTheme {
   primary?: string;
