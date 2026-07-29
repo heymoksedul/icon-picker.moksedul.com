@@ -28,6 +28,7 @@ export interface IconPickerFieldProps {
   placeholder?: string;
   IconComponent?: IconType | null;
   placeholderIcon?: ReactNode;
+  aspectRatio?: number;
 }
 
 const cardSizes: Record<string, { box: string; icon: number }> = {
@@ -54,6 +55,7 @@ export function IconPickerField({
   placeholder = "Select icon...",
   IconComponent,
   placeholderIcon,
+  aspectRatio,
 }: IconPickerFieldProps) {
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
@@ -61,41 +63,55 @@ export function IconPickerField({
   // Build CSS variable overrides from the theme prop
   const themeVars: CSSProperties = theme
     ? ({
-        ...(theme.primary     && { "--ip-primary":       theme.primary }),
-        ...(theme.primaryFg   && { "--ip-primary-fg":   theme.primaryFg }),
-        ...(theme.bg          && { "--ip-bg":            theme.bg }),
-        ...(theme.fg          && { "--ip-fg":            theme.fg }),
-        ...(theme.fgMuted     && { "--ip-fg-muted":     theme.fgMuted }),
-        ...(theme.border      && { "--ip-border":        theme.border }),
-        ...(theme.surface     && { "--ip-surface":       theme.surface }),
+        ...(theme.primary && { "--ip-primary": theme.primary }),
+        ...(theme.primaryFg && { "--ip-primary-fg": theme.primaryFg }),
+        ...(theme.bg && { "--ip-bg": theme.bg }),
+        ...(theme.fg && { "--ip-fg": theme.fg }),
+        ...(theme.fgMuted && { "--ip-fg-muted": theme.fgMuted }),
+        ...(theme.border && { "--ip-border": theme.border }),
+        ...(theme.surface && { "--ip-surface": theme.surface }),
       } as CSSProperties)
     : {};
 
   const label = value
-    ? (value.name || (value.type === "react-icon" ? value.name : "Custom SVG"))
+    ? value.name || (value.type === "react-icon" ? value.name : "Custom SVG")
     : placeholder;
 
   // ── Card variant ──────────────────────────────────────────────────────────
   if (variant === "card") {
     const isStandard = typeof size === "string" && size in cardSizes;
-    const { box, icon: iconSize } = isStandard ? cardSizes[size as string] : cardSizes.md;
-    const actualIconSize = isStandard ? iconSize : (typeof size === "number" ? size * 0.4 : 40);
-    const customStyle: CSSProperties = isStandard ? {} : {
-      width: typeof size === "number" ? `${size}px` : size,
-      height: typeof size === "number" ? `${size}px` : size,
-    };
+    const { box, icon: iconSize } = isStandard
+      ? cardSizes[size as string]
+      : cardSizes.md;
+    const actualIconSize = isStandard
+      ? iconSize
+      : typeof size === "number"
+        ? size * 0.4
+        : 40;
+    const customStyle: CSSProperties = isStandard
+      ? { ...(aspectRatio ? { aspectRatio } : {}) }
+      : {
+          width: typeof size === "number" ? `${size}px` : size,
+          height: typeof size === "number" ? `${size}px` : size,
+          ...(aspectRatio ? { aspectRatio } : {}),
+        };
 
     return (
-      <div className="icon-picker-scope inline-block" style={themeVars}>
+      <div
+        className={`icon-picker-scope ${className?.includes("w-full") ? "w-full block" : "inline-block"}`}
+        style={themeVars}
+      >
         <button
           type="button"
           onClick={() => setOpen(true)}
           onMouseEnter={() => setHovered(true)}
           onMouseLeave={() => setHovered(false)}
-          className={`relative ${isStandard ? box : ""} rounded-2xl flex items-center justify-center overflow-hidden transition-all duration-200 focus:outline-none group ${className || ""}`}
+          className={`relative ${className?.includes("w-full") ? (aspectRatio ? "" : "h-20") : isStandard ? box : ""} rounded-(--radius) flex items-center justify-center overflow-hidden transition-all duration-200 focus:outline-none group ${className || ""}`}
           style={{
             ...customStyle,
-            border: hovered ? "1px dashed var(--ip-primary)" : "1px solid var(--ip-border)",
+            border: hovered
+              ? "1px dashed var(--ip-primary)"
+              : "1px solid var(--ip-border)",
             backgroundColor: "var(--ip-surface)",
           }}
         >
@@ -103,9 +119,18 @@ export function IconPickerField({
           {value && (
             <div
               className="absolute top-2 right-2 p-1 rounded-full transition-colors z-10 cursor-pointer"
-              style={{ color: "var(--ip-fg-muted)", backgroundColor: "transparent" }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = "var(--ip-fg)"; e.currentTarget.style.backgroundColor = "var(--ip-surface)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = "var(--ip-fg-muted)"; e.currentTarget.style.backgroundColor = "transparent"; }}
+              style={{
+                color: "var(--ip-fg-muted)",
+                backgroundColor: "transparent",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "var(--ip-fg)";
+                e.currentTarget.style.backgroundColor = "var(--ip-surface)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "var(--ip-fg-muted)";
+                e.currentTarget.style.backgroundColor = "transparent";
+              }}
               onClick={(e) => {
                 e.stopPropagation();
                 onChange(null);
@@ -116,9 +141,22 @@ export function IconPickerField({
           )}
 
           {/* Icon or placeholder */}
-          <div style={{ opacity: (value && hovered) ? 0 : 1, transition: "opacity 0.2s" }} className="flex items-center justify-center w-full h-full">
+          <div
+            style={{
+              opacity: value && hovered ? 0 : 1,
+              transition: "opacity 0.2s",
+            }}
+            className="flex items-center justify-center w-full h-full"
+          >
             {value ? (
-              <div style={{ color: "var(--ip-fg)", width: iconSize, height: iconSize }} className="flex items-center justify-center">
+              <div
+                style={{
+                  color: "var(--ip-fg)",
+                  width: iconSize,
+                  height: iconSize,
+                }}
+                className="flex items-center justify-center"
+              >
                 {value.type === "svg" ? (
                   <div
                     dangerouslySetInnerHTML={{ __html: value.svg }}
@@ -130,16 +168,27 @@ export function IconPickerField({
                 ) : (
                   <div
                     className="flex items-center justify-center text-xs font-bold rounded-lg"
-                    style={{ width: iconSize, height: iconSize, backgroundColor: "var(--ip-primary-muted)", color: "var(--ip-primary)" }}
+                    style={{
+                      width: iconSize,
+                      height: iconSize,
+                      backgroundColor: "var(--ip-primary-muted)",
+                      color: "var(--ip-primary)",
+                    }}
                   >
-                    {value.type === "react-icon" ? value.name.substring(0, 2).toUpperCase() : "SV"}
+                    {value.type === "react-icon"
+                      ? value.name.substring(0, 2).toUpperCase()
+                      : "SV"}
                   </div>
                 )}
               </div>
             ) : (
               placeholderIcon || (
                 <UploadCloud
-                  style={{ width: iconSize * 0.6, height: iconSize * 0.6, color: "var(--ip-border)" }}
+                  style={{
+                    width: iconSize * 0.6,
+                    height: iconSize * 0.6,
+                    color: "var(--ip-border)",
+                  }}
                 />
               )
             )}
@@ -151,10 +200,14 @@ export function IconPickerField({
               className="absolute inset-0 flex items-center justify-center transition-opacity duration-200 pointer-events-none"
               style={{ opacity: hovered ? 1 : 0 }}
             >
-              <span className="text-sm font-medium" style={{ color: "var(--ip-primary)" }}>Replace</span>
+              <span
+                className="text-sm font-medium"
+                style={{ color: "var(--ip-primary)" }}
+              >
+                Replace
+              </span>
             </div>
           )}
-
         </button>
 
         <IconPickerDialog
@@ -171,12 +224,20 @@ export function IconPickerField({
   // ── Dashed variant ────────────────────────────────────────────────────────
   if (variant === "dashed") {
     const isStandard = typeof size === "string" && size in cardSizes;
-    const { box, icon: iconSize } = isStandard ? cardSizes[size as string] : cardSizes.md;
-    const actualIconSize = isStandard ? iconSize : (typeof size === "number" ? size * 0.4 : 40);
-    const customStyle: CSSProperties = isStandard ? {} : {
-      width: typeof size === "number" ? `${size}px` : size,
-      height: typeof size === "number" ? `${size}px` : size,
-    };
+    const { box, icon: iconSize } = isStandard
+      ? cardSizes[size as string]
+      : cardSizes.md;
+    const actualIconSize = isStandard
+      ? iconSize
+      : typeof size === "number"
+        ? size * 0.4
+        : 40;
+    const customStyle: CSSProperties = isStandard
+      ? {}
+      : {
+          width: typeof size === "number" ? `${size}px` : size,
+          height: typeof size === "number" ? `${size}px` : size,
+        };
 
     return (
       <div className="icon-picker-scope inline-block" style={themeVars}>
@@ -196,9 +257,18 @@ export function IconPickerField({
           {value && (
             <div
               className="absolute top-2 right-2 p-1 rounded-full transition-colors z-10 cursor-pointer"
-              style={{ color: "var(--ip-fg-muted)", backgroundColor: "transparent" }}
-              onMouseEnter={(e) => { e.currentTarget.style.color = "var(--ip-fg)"; e.currentTarget.style.backgroundColor = "var(--ip-surface)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.color = "var(--ip-fg-muted)"; e.currentTarget.style.backgroundColor = "transparent"; }}
+              style={{
+                color: "var(--ip-fg-muted)",
+                backgroundColor: "transparent",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "var(--ip-fg)";
+                e.currentTarget.style.backgroundColor = "var(--ip-surface)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "var(--ip-fg-muted)";
+                e.currentTarget.style.backgroundColor = "transparent";
+              }}
               onClick={(e) => {
                 e.stopPropagation();
                 onChange(null);
@@ -209,7 +279,7 @@ export function IconPickerField({
           )}
 
           {/* Inner circle for icon */}
-          <div 
+          <div
             className="rounded-full border flex items-center justify-center mb-3 transition-colors"
             style={{
               width: actualIconSize + 24,
@@ -220,7 +290,14 @@ export function IconPickerField({
             }}
           >
             {value ? (
-              <div style={{ color: "var(--ip-fg)", width: actualIconSize, height: actualIconSize }} className="flex items-center justify-center">
+              <div
+                style={{
+                  color: "var(--ip-fg)",
+                  width: actualIconSize,
+                  height: actualIconSize,
+                }}
+                className="flex items-center justify-center"
+              >
                 {value.type === "svg" ? (
                   <div
                     dangerouslySetInnerHTML={{ __html: value.svg }}
@@ -231,18 +308,40 @@ export function IconPickerField({
                 ) : (
                   <div
                     className="flex items-center justify-center text-xs font-bold rounded-full w-full h-full"
-                    style={{ backgroundColor: "var(--ip-primary-muted)", color: "var(--ip-primary)" }}
+                    style={{
+                      backgroundColor: "var(--ip-primary-muted)",
+                      color: "var(--ip-primary)",
+                    }}
                   >
-                    {value.type === "react-icon" ? value.name.substring(0, 2).toUpperCase() : "SV"}
+                    {value.type === "react-icon"
+                      ? value.name.substring(0, 2).toUpperCase()
+                      : "SV"}
                   </div>
                 )}
               </div>
             ) : (
-              placeholderIcon || <UploadCloud style={{ width: actualIconSize * 0.6, height: actualIconSize * 0.6 }} />
+              placeholderIcon || (
+                <UploadCloud
+                  style={{
+                    width: actualIconSize * 0.6,
+                    height: actualIconSize * 0.6,
+                  }}
+                />
+              )
             )}
           </div>
-          
-          <span className="font-medium" style={{ color: hovered ? "var(--ip-primary)" : "var(--ip-fg-muted)", fontSize: isStandard ? (size === "sm" ? "0.75rem" : "0.875rem") : "0.875rem" }}>
+
+          <span
+            className="font-medium"
+            style={{
+              color: hovered ? "var(--ip-primary)" : "var(--ip-fg-muted)",
+              fontSize: isStandard
+                ? size === "sm"
+                  ? "0.75rem"
+                  : "0.875rem"
+                : "0.875rem",
+            }}
+          >
             {value ? (hovered ? "Replace" : "Selected") : placeholder}
           </span>
         </button>
@@ -261,20 +360,26 @@ export function IconPickerField({
   // ── Ghost variant ─────────────────────────────────────────────────────────
   if (variant === "ghost") {
     const isStandard = typeof size === "string" && size in buttonSizes;
-    const btnClass = isStandard ? buttonSizes[size as string] : "h-10 px-4 text-sm gap-2";
-    
+    const btnClass = isStandard
+      ? buttonSizes[size as string]
+      : "h-10 px-4 text-sm gap-2";
+
     return (
       <div className="icon-picker-scope inline-flex" style={themeVars}>
         <button
           type="button"
           onClick={() => setOpen(true)}
           className={`inline-flex items-center rounded-lg text-(--ip-fg) hover:bg-(--ip-surface) transition-all duration-200 focus:outline-none ${btnClass} ${className || ""}`}
-          style={{ 
-            ...(isStandard ? {} : { width: typeof size === "number" ? `${size}px` : size })
+          style={{
+            ...(isStandard
+              ? {}
+              : { width: typeof size === "number" ? `${size}px` : size }),
           }}
         >
           <IconPreview value={value} IconComponent={IconComponent} />
-          <span className="font-medium" style={{ color: "var(--ip-fg-muted)" }}>{label}</span>
+          <span className="font-medium" style={{ color: "var(--ip-fg-muted)" }}>
+            {label}
+          </span>
         </button>
         <IconPickerDialog
           open={open}
@@ -289,23 +394,38 @@ export function IconPickerField({
 
   // ── Default button variant ─────────────────────────────────────────────────
   const isStandardBtn = typeof size === "string" && size in buttonSizes;
-  const defBtnClass = isStandardBtn ? buttonSizes[size as string] : "h-10 px-4 text-sm gap-2";
+  const defBtnClass = isStandardBtn
+    ? buttonSizes[size as string]
+    : "h-10 px-4 text-sm gap-2";
 
   return (
-    <div className={`icon-picker-scope flex ${className?.includes('w-full') ? 'w-full' : 'inline-flex'}`} style={themeVars}>
+    <div
+      className={`icon-picker-scope flex ${className?.includes("w-full") ? "w-full" : "inline-flex"}`}
+      style={themeVars}
+    >
       <button
         type="button"
         onClick={() => setOpen(true)}
         className={`w-full flex items-center justify-between border border-(--ip-border) hover:border-(--ip-primary) hover:border-dashed bg-(--ip-bg) text-(--ip-fg) rounded-lg transition-all duration-200 focus:outline-none ${defBtnClass} ${className || ""}`}
-        style={{ 
-          ...(isStandardBtn ? {} : { width: typeof size === "number" ? `${size}px` : size })
+        style={{
+          ...(isStandardBtn
+            ? {}
+            : { width: typeof size === "number" ? `${size}px` : size }),
         }}
       >
         <div className="flex items-center" style={{ gap: "inherit" }}>
           <IconPreview value={value} IconComponent={IconComponent} />
-          <span className={value ? "font-medium" : "font-normal"} style={{ color: value ? "inherit" : "var(--ip-fg-muted)" }}>{label}</span>
+          <span
+            className={value ? "font-medium" : "font-normal"}
+            style={{ color: value ? "inherit" : "var(--ip-fg-muted)" }}
+          >
+            {label}
+          </span>
         </div>
-        <ChevronDown className="w-4 h-4 shrink-0" style={{ color: "var(--ip-fg-muted)" }} />
+        <ChevronDown
+          className="w-4 h-4 shrink-0"
+          style={{ color: "var(--ip-fg-muted)" }}
+        />
       </button>
       <IconPickerDialog
         open={open}
@@ -319,12 +439,21 @@ export function IconPickerField({
 }
 
 // ── Helper: small icon preview inside button/ghost ─────────────────────────
-function IconPreview({ value, IconComponent }: { value?: IconValue | null; IconComponent?: IconType | null }) {
+function IconPreview({
+  value,
+  IconComponent,
+}: {
+  value?: IconValue | null;
+  IconComponent?: IconType | null;
+}) {
   if (!value) {
     return (
       <div
         className="w-5 h-5 rounded border border-dashed flex items-center justify-center shrink-0"
-        style={{ borderColor: "var(--ip-border)", backgroundColor: "var(--ip-surface)" }}
+        style={{
+          borderColor: "var(--ip-border)",
+          backgroundColor: "var(--ip-surface)",
+        }}
       />
     );
   }
@@ -338,14 +467,24 @@ function IconPreview({ value, IconComponent }: { value?: IconValue | null; IconC
     );
   }
   if (IconComponent) {
-    return <IconComponent size={18} style={{ color: "var(--ip-fg)", flexShrink: 0 }} />;
+    return (
+      <IconComponent
+        size={18}
+        style={{ color: "var(--ip-fg)", flexShrink: 0 }}
+      />
+    );
   }
   return (
     <div
       className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold shrink-0"
-      style={{ backgroundColor: "var(--ip-primary-muted)", color: "var(--ip-primary)" }}
+      style={{
+        backgroundColor: "var(--ip-primary-muted)",
+        color: "var(--ip-primary)",
+      }}
     >
-      {value.type === "react-icon" ? value.name.substring(0, 2).toUpperCase() : "SV"}
+      {value.type === "react-icon"
+        ? value.name.substring(0, 2).toUpperCase()
+        : "SV"}
     </div>
   );
 }
