@@ -191,13 +191,16 @@ export function IconPickerDialog({
     <div className="icon-picker-scope font-sans antialiased">
       {/* Backdrop */}
       <div 
-        className={`fixed inset-0 z-9998 bg-zinc-950/40 backdrop-blur-sm transition-opacity duration-200 ease-out ${isVisible ? "opacity-100" : "opacity-0"}`} 
+        className={`fixed inset-0 z-[9998] transition-opacity duration-200 ease-out ${isVisible ? "opacity-100" : "opacity-0"}`}
+        style={{ backgroundColor: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}
         onClick={onClose} 
       />
       
       {/* Modal Container */}
-      <div className={`fixed left-1/2 top-1/2 z-9999 flex w-full max-w-300 h-[85vh] -translate-x-1/2 flex-col md:flex-row overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#383838] transition-all duration-200 ease-out ${isVisible ? "-translate-y-1/2 opacity-100 scale-100" : "-translate-y-[48%] opacity-0 scale-95"}`}>
-        
+      <div
+        className={`fixed left-1/2 top-1/2 z-[9999] flex w-full max-w-[75rem] h-[85vh] -translate-x-1/2 flex-col md:flex-row overflow-hidden rounded-2xl transition-all duration-200 ease-out ${isVisible ? "-translate-y-1/2 opacity-100 scale-100" : "-translate-y-[48%] opacity-0 scale-95"}`}
+        style={{ border: "1px solid var(--ip-border)", backgroundColor: "var(--ip-bg)" }}
+      >
         <IconPickerSidebar 
           title={title}
           tab={tab}
@@ -210,7 +213,7 @@ export function IconPickerDialog({
         />
 
         {/* Main Area */}
-        <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-zinc-950">
+        <div className="flex-1 flex flex-col min-w-0" style={{ backgroundColor: "var(--ip-bg)" }}>
           {tab === "custom" ? (
             <div className="flex-1 overflow-y-auto custom-scrollbar p-8 pt-10">
               <CustomSvgInput onInsert={handleCustomSvgInsert} />

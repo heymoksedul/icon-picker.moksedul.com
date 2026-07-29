@@ -27,16 +27,19 @@ export function IconPickerGrid({
   return (
     <div className="flex-1 overflow-y-auto px-6 pb-6 custom-scrollbar" ref={gridRef} onScroll={handleScroll}>
       {loading ? (
-        <div className="flex h-40 flex-col items-center justify-center text-zinc-400 gap-4">
-          <Loader2 className="size-8 animate-spin text-indigo-500" />
-          <span className="text-sm font-medium text-zinc-500">Loading icons...</span>
+        <div className="flex h-40 flex-col items-center justify-center gap-4">
+          <Loader2 className="size-8 animate-spin" style={{ color: "var(--ip-primary)" }} />
+          <span className="text-sm font-medium" style={{ color: "var(--ip-fg-muted)" }}>Loading icons...</span>
         </div>
       ) : shown.length === 0 ? (
-        <div className="flex h-40 flex-col items-center justify-center text-zinc-400 gap-4">
-          <div className="p-4 rounded-full bg-zinc-50 dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800">
-            <Search className="size-8 text-zinc-300 dark:text-zinc-600" />
+        <div className="flex h-40 flex-col items-center justify-center gap-4">
+          <div
+            className="p-4 rounded-full"
+            style={{ backgroundColor: "var(--ip-surface)", border: "1px solid var(--ip-border)" }}
+          >
+            <Search className="size-8 opacity-30" style={{ color: "var(--ip-fg-muted)" }} />
           </div>
-          <span className="text-sm font-medium text-zinc-500">No icons match "{search}"</span>
+          <span className="text-sm font-medium" style={{ color: "var(--ip-fg-muted)" }}>No icons match "{search}"</span>
         </div>
       ) : (
         <>
@@ -50,11 +53,12 @@ export function IconPickerGrid({
                   type="button"
                   onClick={() => pick(set, name)}
                   title={name}
-                  className={`flex aspect-square items-center justify-center rounded-xl transition-all duration-200 group ${
-                    active 
-                      ? "border border-dashed border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400" 
-                      : "border border-zinc-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700"
-                  }`}
+                  className="flex aspect-square items-center justify-center rounded-xl transition-all duration-200 group"
+                  style={{
+                    border: active ? "1px dashed var(--ip-primary)" : "1px solid var(--ip-border)",
+                    backgroundColor: active ? "var(--ip-primary-muted)" : "var(--ip-bg)",
+                    color: active ? "var(--ip-primary)" : "var(--ip-fg)",
+                  }}
                 >
                   {Comp ? <Comp size={24} className={active ? "" : "group-hover:scale-110 transition-transform duration-200"} /> : null}
                 </button>
@@ -62,7 +66,7 @@ export function IconPickerGrid({
             })}
           </div>
           {overflow > 0 && (
-            <div className="mt-8 mb-4 flex justify-center items-center gap-3 text-zinc-400">
+            <div className="mt-8 mb-4 flex justify-center items-center gap-3" style={{ color: "var(--ip-fg-muted)" }}>
               <Loader2 className="w-5 h-5 animate-spin" />
               <span className="text-sm font-medium">Loading more...</span>
             </div>

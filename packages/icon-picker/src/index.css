@@ -4,38 +4,38 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer components {
+  /* ─── Icon Picker scope: isolated CSS variables ─────────────────────── */
+  /* Light defaults */
   .icon-picker-scope {
-    /* We can scope variables here if needed, but Tailwind v4 classes handles dark mode natively based on standard parent class */
+    --ip-bg:             #ffffff;
+    --ip-surface:        #f4f4f5;
+    --ip-fg:             #09090b;
+    --ip-fg-muted:       #71717a;
+    --ip-border:         #e4e4e7;
+    --ip-primary:        #4f46e5;
+    --ip-primary-fg:     #ffffff;
+    --ip-primary-muted:  rgba(79, 70, 229, 0.1);
+    --ip-accent:         #f4f4f5;
     color-scheme: light;
   }
-  
+
+  /* Dark defaults */
   :is(.dark .icon-picker-scope) {
+    --ip-bg:             #18181b;
+    --ip-surface:        #27272a;
+    --ip-fg:             #fafafa;
+    --ip-fg-muted:       #a1a1aa;
+    --ip-border:         #3f3f46;
+    --ip-primary:        #6366f1;
+    --ip-primary-fg:     #ffffff;
+    --ip-primary-muted:  rgba(99, 102, 241, 0.12);
+    --ip-accent:         #27272a;
     color-scheme: dark;
   }
 
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: #e4e4e7;
-    border-radius: 10px;
-  }
-
-  :is(.dark .custom-scrollbar)::-webkit-scrollbar-thumb {
-    background: #3f3f46;
-  }
-
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #d4d4d8;
-  }
-
-  :is(.dark .custom-scrollbar)::-webkit-scrollbar-thumb:hover {
-    background: #52525b;
-  }
+  /* ─── Scrollbar ──────────────────────────────────────────────────────── */
+  .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background: var(--ip-border); border-radius: 10px; }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--ip-fg-muted); }
 }

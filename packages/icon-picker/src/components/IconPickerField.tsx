@@ -17,31 +17,42 @@ export function IconPickerField({
   const [open, setOpen] = useState(false);
 
   return (
-    <>
+    <div className="icon-picker-scope">
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={`flex items-center justify-between px-4 py-3 border rounded-xl bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-all duration-200 ${className}`}
+        style={{
+          backgroundColor: "var(--ip-bg)",
+          borderColor: "var(--ip-border)",
+          color: "var(--ip-fg)",
+        }}
+        className={`flex items-center justify-between px-4 py-3 border rounded-xl transition-all duration-200 ${className}`}
       >
         <div className="flex items-center gap-3">
           {value ? (
-            <div className="text-zinc-700 dark:text-zinc-200 flex items-center justify-center">
+            <div className="flex items-center justify-center" style={{ color: "var(--ip-fg)" }}>
               {value.type === "svg" ? (
                 <div dangerouslySetInnerHTML={{ __html: value.svg }} className="w-5 h-5 flex items-center justify-center" />
               ) : (
-                <div className="w-5 h-5 rounded bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-[10px] font-bold">
+                <div
+                  className="w-5 h-5 rounded flex items-center justify-center text-[10px] font-bold"
+                  style={{ backgroundColor: "var(--ip-primary-muted)", color: "var(--ip-primary)" }}
+                >
                   {value.type === "react-icon" ? value.name.substring(0, 2).toUpperCase() : "IC"}
                 </div>
               )}
             </div>
           ) : (
-            <div className="w-5 h-5 rounded border border-dashed border-zinc-300 dark:border-zinc-700 flex items-center justify-center bg-zinc-50 dark:bg-zinc-800/50" />
+            <div
+              className="w-5 h-5 rounded border border-dashed flex items-center justify-center"
+              style={{ borderColor: "var(--ip-border)", backgroundColor: "var(--ip-surface)" }}
+            />
           )}
-          <span className="text-sm font-medium text-zinc-700 dark:text-zinc-200">
+          <span className="text-sm font-medium" style={{ color: "var(--ip-fg)" }}>
             {value ? (value.type === "react-icon" ? value.name : "Custom SVG") : "Select icon..."}
           </span>
         </div>
-        <ChevronDown className="w-4 h-4 text-zinc-400 dark:text-zinc-500" />
+        <ChevronDown className="w-4 h-4" style={{ color: "var(--ip-fg-muted)" }} />
       </button>
       <IconPickerDialog
         open={open}
@@ -49,6 +60,6 @@ export function IconPickerField({
         onSelect={onChange}
         value={value}
       />
-    </>
+    </div>
   );
 }
