@@ -1,40 +1,26 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { IconType } from "react-icons";
-import { Search, Loader2 } from "lucide-react";
-import {
-  ICON_SETS,
-  loadIconSet,
-  iconNames,
-  type IconModule,
-  type IconSetMeta,
-} from "../icon-sets";
+import { ICON_SETS, iconNames, loadIconSet, type IconSetMeta } from "../icon-sets";
 import type { IconStoreConfig, IconValue } from "../types";
-import { useIconStoreConfig } from "./IconProvider";
-import { StyleInjector } from "./IconProvider";
-import { cn } from "@/lib/utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle,
-} from "./ui/dialog";
 import CustomSvgInput from "./CustomSvgInput";
+import { useIconStoreConfig } from "./IconProvider";
+import { IconPickerSidebar } from "./IconPickerSidebar";
+import { IconPickerHeader } from "./IconPickerHeader";
+import { IconPickerGrid } from "./IconPickerGrid";
+import { IconPickerFooter } from "./IconPickerFooter";
 
-/** How many icons to render at once before asking the user to refine search. */
 const RENDER_CAP = 300;
-
 type Tab = "library" | "custom";
 
 export interface IconPickerDialogProps {
   open: boolean;
   onClose: () => void;
-  /** Fired when the user picks (react-icon) or inserts (custom SVG) an icon. */
   onSelect: (value: IconValue) => void;
-  /** Current value — used to preselect the set + highlight the active icon. */
   value?: IconValue | null;
   title?: string;
-  /** Per-instance config; falls back to <IconProvider> then package defaults. */
   config?: IconStoreConfig;
 }
 
@@ -56,206 +42,210 @@ export function IconPickerDialog({
     return ICON_SETS.filter((s) => allow.has(s.id));
   }, [merged.enabledSets]);
 
-  const initialSet =
-    (value?.type === "react-icon" &&
-      sets.find((s) => s.id === value.set)?.id) ||
-    sets[0]?.id;
+  const initialSet = (value?.type === "react-icon" && sets.find((s) => s.id === value.set)?.id) || "all";
 
   const [tab, setTab] = useState<Tab>("library");
   const [activeSet, setActiveSet] = useState<string>(initialSet);
   const [search, setSearch] = useState("");
-  const [mod, setMod] = useState<IconModule | null>(null);
+  const [styleFilter, setStyleFilter] = useState("all");
+  const [loadedIcons, setLoadedIcons] = useState<{ set: string; name: string; Comp: IconType }[]>([]);
   const [loading, setLoading] = useState(false);
+  const [applying, setApplying] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
+  const [visibleCount, setVisibleCount] = useState(RENDER_CAP);
 
-  // Reset transient state each time the dialog opens.
+  const [stagedIcon, setStagedIcon] = useState<IconValue | null>(value || null);
+  const [isMounted, setIsMounted] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setIsMounted(true);
+      // Wait for next frame to trigger enter animation
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsVisible(true);
+        });
+      });
+    } else {
+      setIsVisible(false);
+      // Wait for exit animation to finish before unmounting
+      const timer = setTimeout(() => {
+        setIsMounted(false);
+      }, 200); // 200ms matches our duration-200
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
   useEffect(() => {
     if (open) {
       setTab("library");
       setActiveSet(initialSet);
       setSearch("");
+      setStagedIcon(value || null);
+      setApplying(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, initialSet, value]);
 
-  // Load the active set's module on demand.
+  useEffect(() => {
+    setVisibleCount(RENDER_CAP);
+  }, [search, activeSet, tab]);
+
   useEffect(() => {
     if (!open || tab !== "library" || !activeSet) return;
     let alive = true;
     setLoading(true);
-    setMod(null);
-    loadIconSet(activeSet).then((m) => {
-      if (!alive) return;
-      setMod(m);
+    setLoadedIcons([]);
+
+    const loadData = async () => {
+      if (activeSet === "all") {
+        const mods = await Promise.all(sets.map((s) => loadIconSet(s.id)));
+        if (!alive) return;
+        const combined: { set: string; name: string; Comp: IconType }[] = [];
+        mods.forEach((m, i) => {
+          if (m) {
+            const setId = sets[i].id;
+            iconNames(m).forEach((name) => combined.push({ set: setId, name, Comp: m[name] }));
+          }
+        });
+        setLoadedIcons(combined);
+      } else {
+        const m = await loadIconSet(activeSet);
+        if (!alive) return;
+        const combined: { set: string; name: string; Comp: IconType }[] = [];
+        if (m) {
+          iconNames(m).forEach((name) => combined.push({ set: activeSet, name, Comp: m[name] }));
+        }
+        setLoadedIcons(combined);
+      }
       setLoading(false);
       if (gridRef.current) gridRef.current.scrollTop = 0;
-    });
+    };
+
+    loadData();
     return () => {
       alive = false;
     };
-  }, [open, tab, activeSet]);
-
-  const allNames = useMemo(() => (mod ? iconNames(mod) : []), [mod]);
+  }, [open, tab, activeSet, sets]);
 
   const filtered = useMemo(() => {
+    let result = loadedIcons;
+    if (styleFilter === "outline") {
+      result = result.filter((item) => {
+        const lower = item.name.toLowerCase();
+        return lower.includes("outline") || lower.includes("reg") || lower.includes("line");
+      });
+    } else if (styleFilter === "solid") {
+      result = result.filter((item) => {
+        const lower = item.name.toLowerCase();
+        return lower.includes("solid") || lower.includes("fill");
+      });
+    }
     const q = search.trim().toLowerCase();
-    const names = q ? allNames.filter((n) => n.toLowerCase().includes(q)) : allNames;
-    return names;
-  }, [allNames, search]);
+    return q ? result.filter((item) => item.name.toLowerCase().includes(q)) : result;
+  }, [loadedIcons, search, styleFilter]);
 
-  const shown = filtered.slice(0, RENDER_CAP);
+  const shown = filtered.slice(0, visibleCount);
   const overflow = filtered.length - shown.length;
 
-  const pick = (name: string) => {
-    onSelect({ type: "react-icon", set: activeSet, name });
-    onClose();
-  };
-
-  const insertSvg = async (svg: string) => {
-    if (merged.onUploadSvg) {
-      const v = await merged.onUploadSvg(svg);
-      onSelect(v);
-    } else {
-      onSelect({ type: "svg", svg });
+  const handleScroll = () => {
+    if (!gridRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = gridRef.current;
+    if (scrollHeight - scrollTop - clientHeight < 250) {
+      setVisibleCount((prev) => prev + RENDER_CAP);
     }
-    onClose();
   };
 
-  return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <StyleInjector />
-      <DialogContent className="h-[80vh] max-w-4xl p-0">
-        {/* Header */}
-        <div className="flex flex-col gap-3 border-b border-border p-4 pr-12">
-          <DialogTitle>{title}</DialogTitle>
-          <div className="flex items-center gap-2">
-            <div className="flex overflow-hidden rounded-md border border-border">
-              <button
-                type="button"
-                onClick={() => setTab("library")}
-                className={cn(
-                  "px-3 py-1.5 text-sm font-medium transition-colors",
-                  tab === "library"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-background text-muted-foreground hover:bg-muted",
-                )}
-              >
-                Icon library
-              </button>
-              {allowCustomSvg && (
-                <button
-                  type="button"
-                  onClick={() => setTab("custom")}
-                  className={cn(
-                    "px-3 py-1.5 text-sm font-medium transition-colors",
-                    tab === "custom"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-background text-muted-foreground hover:bg-muted",
-                  )}
-                >
-                  Custom SVG
-                </button>
-              )}
-            </div>
+  const pick = (set: string, name: string) => {
+    setStagedIcon({ type: "react-icon", set, name });
+  };
 
-            {tab === "library" && (
-              <div className="relative flex-1">
-                <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search icons…"
-                  className="h-9 w-full rounded-md border border-input bg-background pl-8 pr-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-ring"
-                />
-              </div>
-            )}
-          </div>
+  const handleCustomSvgInsert = (svg: string | null) => {
+    if (svg) {
+      setStagedIcon({ type: "svg", svg });
+    } else {
+      setStagedIcon(null);
+    }
+  };
+
+  const handleApply = async () => {
+    if (!stagedIcon) return;
+    setApplying(true);
+    try {
+      if (stagedIcon.type === "svg" && merged.onUploadSvg) {
+        const uploaded = await merged.onUploadSvg(stagedIcon.svg);
+        onSelect(uploaded);
+      } else {
+        onSelect(stagedIcon);
+      }
+      onClose();
+    } catch (err) {
+      console.error("Failed to apply icon", err);
+      setApplying(false);
+    }
+  };
+
+  if (!isMounted) return null;
+
+  return createPortal(
+    <div className="icon-picker-scope font-sans antialiased">
+      {/* Backdrop */}
+      <div 
+        className={`fixed inset-0 z-9998 bg-zinc-950/40 backdrop-blur-sm transition-opacity duration-200 ease-out ${isVisible ? "opacity-100" : "opacity-0"}`} 
+        onClick={onClose} 
+      />
+      
+      {/* Modal Container */}
+      <div className={`fixed left-1/2 top-1/2 z-9999 flex w-full max-w-300 h-[85vh] -translate-x-1/2 flex-col md:flex-row overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#383838] transition-all duration-200 ease-out ${isVisible ? "-translate-y-1/2 opacity-100 scale-100" : "-translate-y-[48%] opacity-0 scale-95"}`}>
+        
+        <IconPickerSidebar 
+          title={title}
+          tab={tab}
+          setTab={setTab}
+          activeSet={activeSet}
+          setActiveSet={setActiveSet}
+          setSearch={setSearch}
+          sets={sets}
+          allowCustomSvg={allowCustomSvg}
+        />
+
+        {/* Main Area */}
+        <div className="flex-1 flex flex-col min-w-0 bg-white dark:bg-zinc-950">
+          {tab === "custom" ? (
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-8 pt-10">
+              <CustomSvgInput onInsert={handleCustomSvgInsert} />
+            </div>
+          ) : (
+            <>
+              <IconPickerHeader 
+                search={search}
+                setSearch={setSearch}
+                styleFilter={styleFilter}
+                setStyleFilter={setStyleFilter}
+              />
+              <IconPickerGrid 
+                loading={loading}
+                search={search}
+                shown={shown}
+                overflow={overflow}
+                stagedIcon={stagedIcon}
+                pick={pick}
+                gridRef={gridRef}
+                handleScroll={handleScroll}
+              />
+            </>
+          )}
+
+          <IconPickerFooter 
+            onClose={onClose}
+            handleApply={handleApply}
+            stagedIcon={stagedIcon}
+            applying={applying}
+          />
         </div>
-
-        {/* Body */}
-        {tab === "custom" ? (
-          <div className="min-h-0 flex-1 overflow-y-auto">
-            <CustomSvgInput onInsert={insertSvg} />
-          </div>
-        ) : (
-          <div className="flex min-h-0 flex-1">
-            {/* Set selector */}
-            <div className="custom-scrollbar w-44 shrink-0 overflow-y-auto border-r border-border p-2">
-              {sets.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => {
-                    setActiveSet(s.id);
-                    setSearch("");
-                  }}
-                  className={cn(
-                    "mb-0.5 w-full truncate rounded-md px-3 py-2 text-left text-sm transition-colors",
-                    activeSet === s.id
-                      ? "bg-muted font-medium text-foreground"
-                      : "text-muted-foreground hover:bg-muted/60",
-                  )}
-                  title={s.label}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Icon grid */}
-            <div
-              ref={gridRef}
-              className="custom-scrollbar min-h-0 flex-1 overflow-y-auto p-3"
-            >
-              {loading ? (
-                <div className="flex h-full items-center justify-center text-muted-foreground">
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  Loading icons…
-                </div>
-              ) : shown.length === 0 ? (
-                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-                  No icons match “{search}”.
-                </div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-[repeat(auto-fill,minmax(56px,1fr))] gap-1.5">
-                    {shown.map((name) => {
-                      const Comp = mod?.[name] as IconType;
-                      const active =
-                        value?.type === "react-icon" &&
-                        value.set === activeSet &&
-                        value.name === name;
-                      return (
-                        <button
-                          key={name}
-                          type="button"
-                          onClick={() => pick(name)}
-                          title={name}
-                          className={cn(
-                            "flex aspect-square items-center justify-center rounded-md border text-foreground transition-colors",
-                            active
-                              ? "border-primary bg-primary/10"
-                              : "border-transparent hover:border-border hover:bg-muted",
-                          )}
-                        >
-                          {Comp ? <Comp size={22} /> : null}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {overflow > 0 && (
-                    <p className="mt-3 text-center text-xs text-muted-foreground">
-                      Showing {shown.length} of {filtered.length}. Refine your
-                      search to see more.
-                    </p>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>,
+    document.body
   );
 }
 
