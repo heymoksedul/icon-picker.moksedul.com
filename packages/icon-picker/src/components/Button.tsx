@@ -10,11 +10,11 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     const baseStyles = "inline-flex items-center justify-center font-medium transition-all focus:outline-none disabled:opacity-50 disabled:pointer-events-none shrink-0";
 
     const variants: Record<string, string> = {
-      primary:   "text-[var(--ip-primary-fg)] shadow-sm",
+      primary:   "text-[var(--ip-primary-fg)]",
       secondary: "text-[var(--ip-fg)]",
       outline:   "border border-[var(--ip-border)] text-[var(--ip-fg)] bg-transparent",
       ghost:     "text-[var(--ip-fg)] bg-transparent",
-      danger:    "bg-red-600 hover:bg-red-700 text-white shadow-sm",
+      danger:    "bg-red-600 hover:bg-red-700 text-white",
     };
 
     const variantStyles: Record<string, React.CSSProperties> = {

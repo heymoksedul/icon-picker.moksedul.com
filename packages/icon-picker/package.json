@@ -1,5 +1,5 @@
 {
-  "name": "@hellomoksedul/icon-store",
+  "name": "@hellomoksedul/icon-picker",
   "version": "0.1.0",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -16,7 +16,7 @@
     "dist"
   ],
   "scripts": {
-    "build:css": "npx @tailwindcss/cli -i src/index.css -o dist/index.css",
+    "build:css": "npx @tailwindcss/cli -i src/index.css -o dist/index.css && node scripts/build-css.js",
     "build:js": "tsup",
     "build": "pnpm run build:css && pnpm run build:js",
     "dev": "tsup --watch",
@@ -27,10 +27,8 @@
     "react-dom": "^19"
   },
   "dependencies": {
-    "clsx": "^2.1.1",
     "lucide-react": "^0.475.0",
-    "react-icons": "^5.4.0",
-    "tailwind-merge": "^3.0.1"
+    "react-icons": "^5.4.0"
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",

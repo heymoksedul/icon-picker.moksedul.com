@@ -1,5 +1,6 @@
-@import "tailwindcss";
-@import "tailwindcss/utilities";
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+@import "tailwindcss/theme" layer(theme);
+@import "tailwindcss/utilities" layer(utilities);
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -7,6 +8,7 @@
   /* ─── Icon Picker scope: isolated CSS variables ─────────────────────── */
   /* Light defaults */
   .icon-picker-scope {
+    font-family: "DM Sans", sans-serif;
     --ip-bg:             #ffffff;
     --ip-surface:        #f4f4f5;
     --ip-fg:             #09090b;

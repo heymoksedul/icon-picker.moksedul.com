@@ -14,7 +14,8 @@ import {
   Sparkles,
   Star,
   Triangle,
-  Zap
+  Zap,
+  Upload
 } from "lucide-react";
 import type { IconSetMeta } from "../icon-sets";
 
@@ -56,17 +57,53 @@ export function IconPickerSidebar({
 
   return (
     <div
-      className="w-full md:w-64 border-b md:border-b-0 md:border-r p-5 flex flex-col gap-5 shrink-0"
+      className="w-full md:w-64 border-b md:border-b-0 md:border-r p-5 md:p-6 flex flex-col gap-3 md:gap-5 shrink-0"
       style={{ borderColor: "var(--ip-border)", backgroundColor: "var(--ip-bg)" }}
     >
       {/* Header */}
-      <div className="flex items-center gap-2.5 mb-1 pl-1">
-        <Sparkles className="w-5 h-5" style={{ color: "var(--ip-primary)" }} />
-        <h2 className="font-bold text-lg tracking-tight" style={{ color: "var(--ip-fg)" }}>{title}</h2>
+      <div className="flex items-center justify-between mb-0 md:mb-1 pl-1">
+        <div className="flex items-center gap-2.5">
+          <Sparkles className="w-4 h-4 md:w-5 md:h-5" style={{ color: "var(--ip-primary)" }} />
+          <h2 className="font-bold text-base md:text-lg tracking-tight" style={{ color: "var(--ip-fg)" }}>{title}</h2>
+        </div>
+        
+        {/* Custom SVG toggle button for mobile only */}
+        {allowCustomSvg && (
+          <button
+            type="button"
+            onClick={() => {
+              if (tab === "custom") {
+                setTab("library");
+                setActiveSet("all");
+                setSearch("");
+              } else {
+                setTab("custom");
+              }
+            }}
+            className="md:hidden flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+            style={{
+              backgroundColor: "var(--ip-surface)",
+              color: "var(--ip-fg)",
+              border: "1px solid var(--ip-border)"
+            }}
+          >
+            {tab === "custom" ? (
+              <>
+                <Star className="w-3.5 h-3.5" />
+                <span>All icons</span>
+              </>
+            ) : (
+              <>
+                <Upload className="w-3.5 h-3.5" />
+                <span>Upload SVG</span>
+              </>
+            )}
+          </button>
+        )}
       </div>
 
-      {/* Sets list */}
-      <div className="custom-scrollbar flex-1 overflow-y-auto space-y-0.5 -mx-2 px-2">
+      {/* Sets list - Hidden on mobile, visible on desktop */}
+      <div className="hidden md:flex custom-scrollbar flex-col overflow-y-auto flex-1 space-y-0.5 -mx-2 px-2">
         {/* All Icons */}
         {(() => {
           const isAll = tab === "library" && activeSet === "all";
@@ -84,8 +121,12 @@ export function IconPickerSidebar({
                 <span>All Icons</span>
               </div>
               <span
-                className="text-[11px] px-1.5 py-0.5 rounded-md font-semibold"
-                style={{ backgroundColor: isAll ? "var(--ip-primary-muted)" : "transparent", color: isAll ? "var(--ip-primary)" : "var(--ip-fg-muted)" }}
+                className="text-[10px] px-2 py-0.5 rounded-full font-semibold border"
+                style={{ 
+                  backgroundColor: isAll ? "var(--ip-primary-muted)" : "var(--ip-surface)", 
+                  color: isAll ? "var(--ip-primary)" : "var(--ip-fg-muted)",
+                  borderColor: isAll ? "transparent" : "var(--ip-border)"
+                }}
               >
                 25,097
               </span>
@@ -112,8 +153,12 @@ export function IconPickerSidebar({
               </div>
               {s.count && (
                 <span
-                  className="text-[11px] px-1.5 py-0.5 rounded-md font-semibold"
-                  style={{ backgroundColor: isActive ? "var(--ip-primary-muted)" : "transparent", color: isActive ? "var(--ip-primary)" : "var(--ip-fg-muted)" }}
+                  className="text-[10px] px-2 py-0.5 rounded-full font-semibold border"
+                  style={{ 
+                    backgroundColor: isActive ? "var(--ip-primary-muted)" : "var(--ip-surface)", 
+                    color: isActive ? "var(--ip-primary)" : "var(--ip-fg-muted)",
+                    borderColor: isActive ? "transparent" : "var(--ip-border)"
+                  }}
                 >
                   {s.count}
                 </span>
@@ -123,12 +168,12 @@ export function IconPickerSidebar({
         })}
       </div>
 
-      {/* Custom SVG button */}
+      {/* Custom SVG button - Hidden on mobile, visible on desktop */}
       {allowCustomSvg && (
         <button
           type="button"
           onClick={() => setTab("custom")}
-          className="mt-auto flex items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors"
+          className="hidden md:flex mt-auto items-center justify-between w-full px-4 py-3 rounded-lg text-sm font-medium transition-colors"
           style={{
             border: "1px solid",
             borderColor: tab === "custom" ? "color-mix(in srgb, var(--ip-primary) 30%, transparent)" : "var(--ip-border)",
@@ -137,10 +182,10 @@ export function IconPickerSidebar({
           }}
         >
           <div className="flex items-center gap-2">
-            <Code className="w-4 h-4" />
-            Custom SVG
+            <Upload className="w-4 h-4" />
+            <span>Custom SVG</span>
           </div>
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-4 h-4 hidden md:block" />
         </button>
       )}
     </div>

@@ -14,7 +14,7 @@ export function IconPickerHeader({
   setStyleFilter
 }: IconPickerHeaderProps) {
   return (
-    <div className="p-6 pb-4 flex items-center gap-3">
+    <div className="px-5 md:px-6 pt-5 md:pt-6 pb-4 flex items-center gap-3">
       <div
         className="relative flex-1 flex items-center rounded-lg transition-all"
         style={{ border: "1px solid var(--ip-border)", backgroundColor: "var(--ip-bg)" }}

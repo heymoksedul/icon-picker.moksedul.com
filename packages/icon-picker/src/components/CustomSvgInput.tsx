@@ -129,21 +129,21 @@ export default function CustomSvgInput({ onInsert }: { onInsert: (svg: string | 
 
       {/* Smart color adaptation toggle */}
       <div
-        className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl gap-4"
+        className="flex flex-row items-center justify-between p-3 rounded-lg gap-3"
         style={{ border: "1px solid var(--ip-border)", backgroundColor: "var(--ip-bg)" }}
       >
-        <div className="flex items-start gap-3">
-          <div className="p-2 rounded-lg" style={{ backgroundColor: stripColors ? "var(--ip-primary-muted)" : "var(--ip-surface)" }}>
+        <div className="flex items-start gap-2.5">
+          <div className="p-1.5 rounded-md" style={{ backgroundColor: stripColors ? "var(--ip-primary-muted)" : "var(--ip-surface)" }}>
             <PaintBucket className="w-4 h-4" style={{ color: stripColors ? "var(--ip-primary)" : "var(--ip-fg-muted)" }} />
           </div>
           <div>
             <h4 className="text-sm font-medium" style={{ color: "var(--ip-fg)" }}>Smart Color Adaptation</h4>
             <p className="text-xs mt-0.5" style={{ color: "var(--ip-fg-muted)" }}>
-              Replaces hardcoded fills and strokes with currentColor so the icon adapts to your UI theme.
+              Adapts hardcoded colors to your UI theme.
             </p>
           </div>
         </div>
-        <label className="relative inline-flex items-center cursor-pointer shrink-0 sm:self-center">
+        <label className="relative inline-flex items-center cursor-pointer shrink-0">
           <input
             type="checkbox"
             className="sr-only peer"

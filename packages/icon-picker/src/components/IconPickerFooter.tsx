@@ -1,4 +1,3 @@
-import { CheckCircle2, Loader2 } from "lucide-react";
 import type { IconValue } from "../types";
 import { Button } from "./Button";
 
@@ -17,7 +16,7 @@ export function IconPickerFooter({
 }: IconPickerFooterProps) {
   return (
     <div
-      className="p-5 flex items-center justify-end gap-3 shrink-0"
+      className="px-5 md:px-6 py-4 md:py-5 flex items-center justify-end gap-3 shrink-0"
       style={{ borderTop: "1px solid var(--ip-border)", backgroundColor: "var(--ip-bg)" }}
     >
       <Button variant="outline" onClick={onClose}>
@@ -29,12 +28,7 @@ export function IconPickerFooter({
         disabled={!stagedIcon || applying}
         className="px-6"
       >
-        {applying ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : (
-          <CheckCircle2 className="w-4 h-4" />
-        )}
-        Apply icon
+        Apply
       </Button>
     </div>
   );

@@ -1,6 +1,6 @@
 export type IconValue =
   | { type: "react-icon"; set: string; name: string; size?: number; color?: string }
-  | { type: "svg"; svg: string; size?: number; color?: string }
+  | { type: "svg"; svg: string; name?: string; size?: number; color?: string }
   | { type: "url"; url: string; size?: number; color?: string };
 
 export interface IconTheme {
@@ -20,4 +20,5 @@ export interface IconStoreConfig {
   allowCustomSvg?: boolean;
   onUploadSvg?: (svgString: string) => Promise<{ type: "url"; url: string }>;
   theme?: IconTheme;
+  outputFormat?: "react-icon" | "svg";
 }

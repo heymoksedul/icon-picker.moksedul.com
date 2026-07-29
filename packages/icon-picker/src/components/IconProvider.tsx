@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import type { IconStoreConfig, IconTheme } from "../types";
+import { cssString } from "../styles";
 
 const IconStoreContext = createContext<IconStoreConfig>({});
 
@@ -33,10 +34,14 @@ export function IconProvider({
     <IconStoreContext.Provider value={config || {}}>
       {Object.keys(style).length > 0 ? (
         <div style={style} className="contents">
+          <style dangerouslySetInnerHTML={{ __html: cssString }} />
           {children}
         </div>
       ) : (
-        children
+        <>
+          <style dangerouslySetInnerHTML={{ __html: cssString }} />
+          {children}
+        </>
       )}
     </IconStoreContext.Provider>
   );

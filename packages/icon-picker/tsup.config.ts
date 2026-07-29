@@ -6,5 +6,5 @@ export default defineConfig({
   dts: true,
   clean: false,
   external: ["react", "react-dom"],
-  injectStyle: true,
+  injectStyle: false,
 });

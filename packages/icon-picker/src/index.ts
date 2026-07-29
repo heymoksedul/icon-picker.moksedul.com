@@ -1,4 +1,3 @@
-import "../dist/index.css";
 export * from "./types";
 export * from "./icon-sets";
 export * from "./components/IconProvider";
