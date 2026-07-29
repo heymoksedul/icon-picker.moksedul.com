@@ -39,8 +39,8 @@ const cardSizes: Record<string, { box: string; icon: number }> = {
 
 const buttonSizes: Record<string, string> = {
   sm: "h-8 px-3 text-xs gap-1.5",
-  md: "h-10 px-4 text-sm gap-2",
-  lg: "h-12 px-5 text-sm gap-2.5",
+  md: "h-9 px-3 text-sm gap-2",
+  lg: "h-11 px-5 text-sm gap-2.5",
   xl: "h-14 px-6 text-base gap-3",
 };
 
@@ -61,7 +61,7 @@ export function IconPickerField({
   // Build CSS variable overrides from the theme prop
   const themeVars: CSSProperties = theme
     ? ({
-        ...(theme.primary     && { "--ip-primary":      theme.primary }),
+        ...(theme.primary     && { "--ip-primary":       theme.primary }),
         ...(theme.primaryFg   && { "--ip-primary-fg":   theme.primaryFg }),
         ...(theme.bg          && { "--ip-bg":            theme.bg }),
         ...(theme.fg          && { "--ip-fg":            theme.fg }),
@@ -162,6 +162,7 @@ export function IconPickerField({
           onClose={() => setOpen(false)}
           onSelect={onChange}
           value={value}
+          themeVars={themeVars}
         />
       </div>
     );
@@ -251,6 +252,7 @@ export function IconPickerField({
           onClose={() => setOpen(false)}
           onSelect={onChange}
           value={value}
+          themeVars={themeVars}
         />
       </div>
     );
@@ -279,6 +281,7 @@ export function IconPickerField({
           onClose={() => setOpen(false)}
           onSelect={onChange}
           value={value}
+          themeVars={themeVars}
         />
       </div>
     );
@@ -293,14 +296,14 @@ export function IconPickerField({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={`w-full flex items-center justify-between border border-(--ip-border) hover:border-(--ip-primary) hover:border-dashed bg-(--ip-bg) text-(--ip-fg) rounded-xl transition-all duration-200 focus:outline-none ${defBtnClass} ${className || ""}`}
+        className={`w-full flex items-center justify-between border border-(--ip-border) hover:border-(--ip-primary) hover:border-dashed bg-(--ip-bg) text-(--ip-fg) rounded-lg transition-all duration-200 focus:outline-none ${defBtnClass} ${className || ""}`}
         style={{ 
           ...(isStandardBtn ? {} : { width: typeof size === "number" ? `${size}px` : size })
         }}
       >
         <div className="flex items-center" style={{ gap: "inherit" }}>
           <IconPreview value={value} IconComponent={IconComponent} />
-          <span className="font-medium">{label}</span>
+          <span className={value ? "font-medium" : "font-normal"} style={{ color: value ? "inherit" : "var(--ip-fg-muted)" }}>{label}</span>
         </div>
         <ChevronDown className="w-4 h-4 shrink-0" style={{ color: "var(--ip-fg-muted)" }} />
       </button>
@@ -309,6 +312,7 @@ export function IconPickerField({
         onClose={() => setOpen(false)}
         onSelect={onChange}
         value={value}
+        themeVars={themeVars}
       />
     </div>
   );

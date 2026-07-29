@@ -22,6 +22,7 @@ export interface IconPickerDialogProps {
   value?: IconValue | null;
   title?: string;
   config?: IconStoreConfig;
+  themeVars?: React.CSSProperties;
 }
 
 export function IconPickerDialog({
@@ -31,6 +32,7 @@ export function IconPickerDialog({
   value,
   title = "Choose Icon",
   config,
+  themeVars,
 }: IconPickerDialogProps) {
   const providerConfig = useIconStoreConfig();
   const merged: IconStoreConfig = { outputFormat: "svg", ...providerConfig, ...config };
@@ -202,7 +204,7 @@ export function IconPickerDialog({
   if (!isMounted) return null;
 
   return createPortal(
-    <div className="icon-picker-scope antialiased">
+    <div className="icon-picker-scope antialiased" style={themeVars}>
       {/* Backdrop */}
       <div 
         className={`fixed inset-0 z-9998 transition-opacity duration-200 ease-out ${isVisible ? "opacity-100" : "opacity-0"}`}
