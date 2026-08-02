@@ -5,6 +5,7 @@ import { CSSProperties, ReactNode, useState } from "react";
 import type { IconType } from "react-icons";
 import type { IconValue } from "../types";
 import { IconPickerDialog } from "./IconPickerDialog";
+import { cssString } from "../styles";
 
 export interface IconPickerFieldProps {
   value?: IconValue | null;
@@ -101,6 +102,7 @@ export function IconPickerField({
         className={`icon-picker-scope ${className?.includes("w-full") ? "w-full block" : "inline-block"}`}
         style={themeVars}
       >
+        <style dangerouslySetInnerHTML={{ __html: cssString }} suppressHydrationWarning />
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -241,6 +243,7 @@ export function IconPickerField({
 
     return (
       <div className="icon-picker-scope inline-block" style={themeVars}>
+        <style dangerouslySetInnerHTML={{ __html: cssString }} suppressHydrationWarning />
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -366,6 +369,7 @@ export function IconPickerField({
 
     return (
       <div className="icon-picker-scope inline-flex" style={themeVars}>
+        <style dangerouslySetInnerHTML={{ __html: cssString }} suppressHydrationWarning />
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -403,6 +407,7 @@ export function IconPickerField({
       className={`icon-picker-scope flex ${className?.includes("w-full") ? "w-full" : "inline-flex"}`}
       style={themeVars}
     >
+      <style dangerouslySetInnerHTML={{ __html: cssString }} suppressHydrationWarning />
       <button
         type="button"
         onClick={() => setOpen(true)}

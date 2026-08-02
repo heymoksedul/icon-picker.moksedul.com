@@ -111,7 +111,7 @@ export function IconPickerSidebar({
             <button
               type="button"
               onClick={() => { setTab("library"); setActiveSet("all"); setSearch(""); }}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+              className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-200"
               style={isAll ? activeStyle : inactiveStyle}
               onMouseEnter={(e) => { if (!isAll) { e.currentTarget.style.backgroundColor = "var(--ip-accent)"; e.currentTarget.style.color = "var(--ip-fg)"; }}}
               onMouseLeave={(e) => { if (!isAll) { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "var(--ip-fg-muted)"; }}}
@@ -142,7 +142,7 @@ export function IconPickerSidebar({
               key={s.id}
               type="button"
               onClick={() => { setTab("library"); setActiveSet(s.id); setSearch(""); }}
-              className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200"
+              className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium transition-all duration-200"
               style={isActive ? activeStyle : inactiveStyle}
               onMouseEnter={(e) => { if (!isActive) { e.currentTarget.style.backgroundColor = "var(--ip-accent)"; e.currentTarget.style.color = "var(--ip-fg)"; }}}
               onMouseLeave={(e) => { if (!isActive) { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = "var(--ip-fg-muted)"; }}}

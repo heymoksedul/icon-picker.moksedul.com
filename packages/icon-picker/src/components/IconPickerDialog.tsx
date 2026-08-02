@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import type { IconType } from "react-icons";
 import { ICON_SETS, iconNames, loadIconSet, type IconSetMeta } from "../icon-sets";
+import { cssString } from "../styles";
 import type { IconStoreConfig, IconValue } from "../types";
 import CustomSvgInput from "./CustomSvgInput";
 import { IconPickerFooter } from "./IconPickerFooter";
@@ -11,7 +12,6 @@ import { IconPickerGrid } from "./IconPickerGrid";
 import { IconPickerHeader } from "./IconPickerHeader";
 import { IconPickerSidebar } from "./IconPickerSidebar";
 import { useIconStoreConfig } from "./IconProvider";
-import { cssString } from "../styles";
 
 const RENDER_CAP = 300;
 type Tab = "library" | "custom";
@@ -184,7 +184,11 @@ export function IconPickerDialog({
           const Comp = item.Comp;
           // Dynamically import react-dom/server to avoid bloating the client bundle
           const { renderToStaticMarkup } = await import("react-dom/server");
-          const svgString = renderToStaticMarkup(<Comp />);
+          let svgString = renderToStaticMarkup(<Comp />);
+          // Inject the name into the SVG string so it can be extracted later by the consumer
+          if (svgString.startsWith("<svg ")) {
+            svgString = svgString.replace("<svg ", `<svg data-icon-name="${stagedIcon.name}" `);
+          }
           finalIcon = { type: "svg", svg: svgString, name: stagedIcon.name };
         }
       }
@@ -202,22 +206,43 @@ export function IconPickerDialog({
     }
   };
 
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    const stop = (e: Event) => e.stopPropagation();
+    // Prevent Radix/Focus-traps in host apps from stealing focus back
+    el.addEventListener("focusin", stop);
+    el.addEventListener("focusout", stop);
+    el.addEventListener("pointerdown", stop);
+    el.addEventListener("mousedown", stop);
+    return () => {
+      el.removeEventListener("focusin", stop);
+      el.removeEventListener("focusout", stop);
+      el.removeEventListener("pointerdown", stop);
+      el.removeEventListener("mousedown", stop);
+    };
+  }, [isMounted]);
+
   if (!isMounted) return null;
 
   return createPortal(
-    <div className="icon-picker-scope antialiased" style={themeVars}>
+    <div ref={wrapperRef} className="icon-picker-scope antialiased pointer-events-auto" style={{ ...themeVars, position: "relative", zIndex: 999999 }}>
       <style dangerouslySetInnerHTML={{ __html: cssString }} />
       {/* Backdrop */}
       <div 
-        className={`fixed inset-0 z-[9998] transition-opacity duration-200 ease-out ${isVisible ? "opacity-100" : "opacity-0"}`}
-        style={{ backgroundColor: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)" }}
+        className={`fixed inset-0 transition-opacity duration-200 ease-out ${isVisible ? "opacity-100" : "opacity-0"}`}
+        style={{ backgroundColor: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)", zIndex: 99998 }}
         onClick={onClose} 
       />
       
       {/* Modal Container */}
       <div
-        className={`fixed left-1/2 top-1/2 w-[95%] md:w-full z-[9999] flex max-w-[1200px] h-[85vh] -translate-x-1/2 flex-col md:flex-row overflow-hidden rounded-2xl transition-all duration-200 ease-out ${isVisible ? "-translate-y-1/2 opacity-100 scale-100" : "translate-y-[-48%] opacity-0 scale-95"}`}
-        style={{ border: "1px solid var(--ip-border)", backgroundColor: "var(--ip-bg)" }}
+        className={`fixed left-1/2 top-1/2 w-[95%] md:w-full flex max-w-[1200px] h-[85vh] -translate-x-1/2 flex-col md:flex-row overflow-hidden rounded-2xl transition-all duration-200 ease-out ${isVisible ? "-translate-y-1/2 opacity-100 scale-100" : "translate-y-[-48%] opacity-0 scale-95"}`}
+        style={{ border: "1px solid var(--ip-border)", backgroundColor: "var(--ip-bg)", zIndex: 99999 }}
+        onWheel={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.stopPropagation()}
       >
         <IconPickerSidebar 
           title={title}
