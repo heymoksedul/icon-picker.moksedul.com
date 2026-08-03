@@ -9,7 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@hellomoksedul/icon-picker": "workspace:*",
+    "@hellokit/icon-picker": "workspace:*",
     "lucide-react": "^0.475.0",
     "next": "16.2.12",
     "next-themes": "^0.4.6",
